@@ -10,6 +10,8 @@ import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFractio
 import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
 import "./extension/GovernorVotesSuperQuorumFraction.sol";
 
+/// @title SuperQuorumGovernor
+/// @dev Extends OpenZeppelin's Governor contract with super quorum functionality.
 contract SuperQuorumGovernor is
     Governor,
     GovernorSettings,
@@ -22,6 +24,13 @@ contract SuperQuorumGovernor is
 {
     uint256 private _superQuorumThreshold;
 
+    /// @dev Initializes the governor contract with custom settings.
+    /// @param _token Address of the governance token.
+    /// @param _timelock Address of the timelock controller.
+    /// @param superQuorumThreshold Threshold for the super quorum.
+    /// @param _votingPeriod Duration of the voting period.
+    /// @param _votingDelay Delay before voting on a proposal starts.
+    /// @param _proposalThreshold Minimum number of tokens required to create a proposal.
     constructor(
         IVotes _token,
         TimelockController _timelock,
@@ -38,9 +47,10 @@ contract SuperQuorumGovernor is
         GovernorTimelockControl(_timelock)
     {}
 
-    // override the state function to allow voting for superQuorum
-
-    // // Logic for handing super Quorum
+    /// @notice Returns the current state of a proposal.
+    /// @dev Overridden to include logic for handling super quorum.
+    /// @param proposalId The ID of the proposal.
+    /// @return Current state of the proposal.
     function state(
         uint256 proposalId
     )
@@ -69,18 +79,8 @@ contract SuperQuorumGovernor is
         }
     }
 
-    // function state(
-    //     uint256 proposalId
-    // )
-    //     public
-    //     view
-    //     override(Governor, GovernorTimelockControl)
-    //     returns (ProposalState)
-    // {
-    //     return super.state(proposalId);
-    // }
-
     // The following functions are overrides required by Solidity.
+
     function votingDelay()
         public
         view
