@@ -25,7 +25,7 @@ contract SuperQuorumGovernor is
     GovernorTimelockControl
 {
     uint256 private _superQuorumThreshold;
-
+    
     /// @dev Initializes the governor contract with custom settings.
     /// @param _token Address of the governance token.
     /// @param _timelock Address of the timelock controller.
@@ -33,13 +33,15 @@ contract SuperQuorumGovernor is
     /// @param _votingPeriod Duration of the voting period.
     /// @param _votingDelay Delay before voting on a proposal starts.
     /// @param _proposalThreshold Minimum number of tokens required to create a proposal.
+    /// @param _initialVoteExtension Initial vote extension duration.
     constructor(
         IVotes _token,
         TimelockController _timelock,
         uint256 superQuorumThreshold,
         uint32 _votingPeriod,
         uint48 _votingDelay,
-        uint256 _proposalThreshold
+        uint256 _proposalThreshold,
+        uint48 _initialVoteExtension
     )
         Governor("MyGovernor")
         GovernorSettings(_votingDelay, _votingPeriod, _proposalThreshold)
@@ -47,6 +49,7 @@ contract SuperQuorumGovernor is
         GovernorVotesQuorumFraction(10)
         GovernorVotesSuperQuorumFraction(50)
         GovernorTimelockControl(_timelock)
+        GovernorPreventLateQuorum(_initialVoteExtension)
     {}
 
     /// @notice Returns the current state of a proposal.
