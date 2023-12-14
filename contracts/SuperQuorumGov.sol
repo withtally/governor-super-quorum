@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/governance/extensions/GovernorStorage.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
+import "./extension/GovernorVotesSuperQuorumFraction.sol";
 
 contract SuperQuorumGovernor is
     Governor,
@@ -16,6 +17,7 @@ contract SuperQuorumGovernor is
     GovernorStorage,
     GovernorVotes,
     GovernorVotesQuorumFraction,
+    GovernorVotesSuperQuorumFraction,
     GovernorTimelockControl
 {
     uint256 private _superQuorumThreshold;
@@ -26,29 +28,44 @@ contract SuperQuorumGovernor is
         uint256 superQuorumThreshold
     )
         Governor("MyGovernor")
-        GovernorSettings(0,5,0)
+        GovernorSettings(0, 5, 0)
         GovernorVotes(_token)
-        GovernorVotesQuorumFraction(4)
+        GovernorVotesQuorumFraction(10)
+        GovernorVotesSuperQuorumFraction(50)
         GovernorTimelockControl(_timelock)
+    {}
+
+    // override the state function to allow voting for superQuorum
+
+    // // Logic for handing super Quorum
+    function state(
+        uint256 proposalId
+    )
+        public
+        view
+        override(Governor, GovernorTimelockControl)
+        returns (ProposalState)
     {
-        _superQuorumThreshold = superQuorumThreshold;
+        ProposalState proposalState = super.state(proposalId);
+
+        (
+            uint256 againstVotes,
+            uint256 forVotes,
+            uint256 abstainVotes
+        ) = proposalVotes(proposalId);
+
+        // This overrides how succeeded is calculated only if we're over superquorum
+        if (
+            proposalState == ProposalState.Active &&
+            (superQuorum(proposalSnapshot(proposalId)) <=
+                forVotes + abstainVotes)
+        ) {
+            return ProposalState.Succeeded;
+        } else {
+            return proposalState;
+        }
     }
 
-    // Override for SuperQuorum
-
-    // // override the _quorumReached function to return yes for superQuorum
-    // function _quorumReached(
-    //     uint256 proposalId
-    // ) internal view override(Governor, GovernorCountingSimple) returns (bool) {
-    //     ProposalVote storage proposalVote = _proposalVotes[proposalId];
-
-    //     return
-    //         quorum(proposalSnapshot(proposalId)) <=
-    //         proposalVote.forVotes + proposalVote.abstainVotes ||
-    //         proposalVote.forVotes >= _superQuorumThreshold;
-    // }
-
-    // // override the state function to allow voting for superQuorum
     // function state(
     //     uint256 proposalId
     // )
@@ -57,51 +74,10 @@ contract SuperQuorumGovernor is
     //     override(Governor, GovernorTimelockControl)
     //     returns (ProposalState)
     // {
-    //     // We read the struct fields into the stack at once so Solidity emits a single SLOAD
-    //     ProposalCore storage proposal = _proposals[proposalId];
-    //     bool proposalExecuted = proposal.executed;
-    //     bool proposalCanceled = proposal.canceled;
-
-    //     if (proposalExecuted) {
-    //         return ProposalState.Executed;
-    //     }
-
-    //     if (proposalCanceled) {
-    //         return ProposalState.Canceled;
-    //     }
-
-    //     uint256 snapshot = proposalSnapshot(proposalId);
-
-    //     if (snapshot == 0) {
-    //         revert GovernorNonexistentProposal(proposalId);
-    //     }
-
-    //     uint256 currentTimepoint = clock();
-
-    //     if (snapshot >= currentTimepoint) {
-    //         return ProposalState.Pending;
-    //     }
-
-    //     uint256 deadline = proposalDeadline(proposalId);
-
-    //     //Return success if the proposal has passed the superQuorumThreshold
-    //     if (proposal.forVotes >= _superQuorumThreshold) {
-    //         return ProposalState.Succeeded;
-    //     }
-
-    //     if (deadline >= currentTimepoint) {
-    //         return ProposalState.Active;
-    //     } else if (!_quorumReached(proposalId) || !_voteSucceeded(proposalId)) {
-    //         return ProposalState.Defeated;
-    //     } else if (proposalEta(proposalId) == 0) {
-    //         return ProposalState.Succeeded;
-    //     } else {
-    //         return ProposalState.Queued;
-    //     }
+    //     return super.state(proposalId);
     // }
 
     // The following functions are overrides required by Solidity.
-
     function votingDelay()
         public
         view
@@ -129,17 +105,6 @@ contract SuperQuorumGovernor is
         returns (uint256)
     {
         return super.quorum(blockNumber);
-    }
-
-    function state(
-        uint256 proposalId
-    )
-        public
-        view
-        override(Governor, GovernorTimelockControl)
-        returns (ProposalState)
-    {
-        return super.state(proposalId);
     }
 
     function proposalNeedsQueuing(
