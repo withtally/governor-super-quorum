@@ -246,6 +246,21 @@ describe("SuperGovernor Contract", function () {
             expect(await this.governor.state(this.proposalId)).to.equal(4); // 4 for 'Succeded'
         });
 
+        it("Should not allow votes after super quorum hit", async function () {
+            // Move to the voting period and cast a vote
+            await mine(votingDelay + 1);
+            await this.governor.connect(this.user1).castVote(this.proposalId, 1);
+
+            // Move forward in time less than the voting period
+            await mine(votingPeriod - 2);
+
+            // Check that proposal succeded
+            expect(await this.governor.state(this.proposalId)).to.equal(4); // 4 for 'Succeded'
+
+            // Make sure you can't vote on it after it's already hit super quorum
+            await expect(this.governor.connect(this.owner).castVote(this.proposalId, 1)).to.be.revertedWithCustomError(this.governor, "GovernorUnexpectedProposalState");
+        });
+
         it("Should queue and execute a successful superQuorum proposal", async function () {
             // Cast a positive vote and end the voting period
             await this.governor.connect(this.user1).castVote(this.proposalId, 1);
@@ -264,6 +279,8 @@ describe("SuperGovernor Contract", function () {
             // Verify the proposal is executed
             expect(await this.governor.state(this.proposalId)).to.equal(7); // 7 for 'Executed'
         });
+
+
 
 
     });

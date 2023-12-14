@@ -1,5 +1,7 @@
 # SuperQuorumGovernor Smart Contract
 
+### NOTE: This contract is currently not audited. Do not use in production without an Audit.
+
 ## General Overview
 
 The `SuperQuorumGovernor` smart contract is an innovative extension of the standard governance model provided by OpenZeppelin. It introduces the concept of "Super Quorum" in governance proposals. This higher quorum threshold is designed to ensure that only proposals with substantial backing and consensus are approved, particularly in critical decision-making scenarios. The contract is developed in Solidity ^0.8.20 and is an integration of OpenZeppelin's governance contracts, including Governor, GovernorSettings, GovernorCountingSimple, GovernorStorage, GovernorVotes, GovernorVotesQuorumFraction, and GovernorTimelockControl.
