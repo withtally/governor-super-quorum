@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/governance/extensions/GovernorStorage.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorPreventLateQuorum.sol";
 import "./extension/GovernorVotesSuperQuorumFraction.sol";
 
 /// @title SuperQuorumGovernor
@@ -20,6 +21,7 @@ contract SuperQuorumGovernor is
     GovernorVotes,
     GovernorVotesQuorumFraction,
     GovernorVotesSuperQuorumFraction,
+    GovernorPreventLateQuorum,
     GovernorTimelockControl
 {
     uint256 private _superQuorumThreshold;
@@ -167,6 +169,47 @@ contract SuperQuorumGovernor is
             calldatas,
             descriptionHash
         );
+    }
+
+    /**
+     * @notice Casts a vote on a proposal.
+     * @param proposalId The ID of the proposal to vote on.
+     * @param account The address of the voter.
+     * @param support The vote choice (true for yes, false for no).
+     * @param reason A brief description of the reason for the vote.
+     * @param params The parameters for the vote.
+     * @return The ID of the vote.
+     */
+    function _castVote(
+        uint256 proposalId,
+        address account,
+        uint8 support,
+        string memory reason,
+        bytes memory params
+    )
+        internal
+        virtual
+        override(Governor, GovernorPreventLateQuorum)
+        returns (uint256)
+    {
+        return super._castVote(proposalId, account, support, reason, params);
+    }
+
+    /**
+     *
+     * @notice Retrieves the deadline for submitting proposals.
+     * @param proposalId The ID of the proposal to query.
+     * @return The deadline for submitting proposals.
+     */
+    function proposalDeadline(
+        uint256 proposalId
+    )
+        public
+        view
+        override(Governor, GovernorPreventLateQuorum)
+        returns (uint256)
+    {
+        return super.proposalDeadline(proposalId);
     }
 
     function _cancel(
