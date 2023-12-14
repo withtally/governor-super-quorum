@@ -25,10 +25,13 @@ contract SuperQuorumGovernor is
     constructor(
         IVotes _token,
         TimelockController _timelock,
-        uint256 superQuorumThreshold
+        uint256 superQuorumThreshold,
+        uint32 _votingPeriod,
+        uint48 _votingDelay,
+        uint256 _proposalThreshold
     )
         Governor("MyGovernor")
-        GovernorSettings(0, 5, 0)
+        GovernorSettings(_votingDelay, _votingPeriod, _proposalThreshold)
         GovernorVotes(_token)
         GovernorVotesQuorumFraction(10)
         GovernorVotesSuperQuorumFraction(50)

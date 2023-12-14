@@ -9,6 +9,18 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { Governor } from "../typechain-types";
 
+// For reference, the enum ProposalState is defined as follows:
+// ProposalState {
+//    0  Pending,
+//    1  Active,
+//    2  Canceled,
+//    3  Defeated,
+//    4  Succeeded,
+//    5  Queued,
+//    6  Expired,
+//    7  Executed
+// }
+
 describe("SuperGovernor Contract", function () {
     let SuperGovernor;
     let superGovernor;
@@ -30,7 +42,7 @@ describe("SuperGovernor Contract", function () {
 
         const timelock = await timelock_factory.deploy(0, [], [], owner.address);
 
-        const governor = await SuperGovernor_factory.deploy(await token.getAddress(), await timelock.getAddress(), superQuorum);
+        const governor = await SuperGovernor_factory.deploy(await token.getAddress(), await timelock.getAddress(), superQuorum, votingPeriod, votingDelay, 0);
 
         await timelock.grantRole(await timelock.PROPOSER_ROLE(), await governor.getAddress());
         await timelock.grantRole(await timelock.EXECUTOR_ROLE(), await governor.getAddress());
@@ -81,7 +93,6 @@ describe("SuperGovernor Contract", function () {
             // Vote on the proposal
             await this.governor.castVote(this.proposalId, 1); // 1 for 'For'
             const proposal = await this.governor.proposalVotes(this.proposalId);
-            console.log("🚀 ~ file: SuperQuorumGov.ts:84 ~ proposal:", proposal)
 
             // Verify the new state of the proposal
             expect(await this.governor.state(this.proposalId)).to.equal(1); // 1 for 'Active'
@@ -180,6 +191,81 @@ describe("SuperGovernor Contract", function () {
             await expect(this.governor.execute(this.proposalId))
                 .to.be.reverted; // Add specific revert reason if your contract has one
         });
+    });
+
+    describe("Proposal Lifecycle - Super Quorum Function", function () {
+        const proposalDescription = "Proposal #1";
+
+        beforeEach(async function () {
+            const { governor, token, timelock, owner, user1 } = await loadFixture(deploySetupFixture);
+
+            this.governor = governor;
+            this.token = token;
+            this.timelock = timelock;
+            this.owner = owner;
+            this.user1 = user1;
+
+            // Mint tokens and delegate to owner for voting power
+            await token.mint(owner.address, ethers.parseEther("100"));
+            await token.mint(user1.address, ethers.parseEther("9000"));
+            await token.delegate(owner.address);
+            await token.connect(user1).delegate(user1.address);
+
+            // Create a proposal
+            const targets = [owner.address];
+            const values = [0];
+            const calldatas = [token.interface.encodeFunctionData("mint", [owner.address, ethers.parseEther("1")])];
+            await governor.propose(targets, values, calldatas, proposalDescription)
+
+            const prop = await governor.proposalDetailsAt(0);
+            this.proposalId = prop[0]
+        });
+
+
+        it("Should not trigger Super Quorum", async function () {
+            // Move to the voting period and cast a vote
+            await mine(votingDelay + 1);
+            await this.governor.castVote(this.proposalId, 1);
+
+            // Move forward in time less than the voting period
+            await mine(votingPeriod - 2);
+
+            // Check that proposal is still active
+            expect(await this.governor.state(this.proposalId)).to.equal(1); // 1 for 'Active'
+        });
+
+        it("Should trigger Super Quorum", async function () {
+            // Move to the voting period and cast a vote
+            await mine(votingDelay + 1);
+            await this.governor.connect(this.user1).castVote(this.proposalId, 1);
+
+            // Move forward in time less than the voting period
+            await mine(votingPeriod - 2);
+
+            // Check that proposal succeded
+            expect(await this.governor.state(this.proposalId)).to.equal(4); // 4 for 'Succeded'
+        });
+
+        it("Should queue and execute a successful superQuorum proposal", async function () {
+            // Cast a positive vote and end the voting period
+            await this.governor.connect(this.user1).castVote(this.proposalId, 1);
+            await mine(votingPeriod + 1);
+
+            // Queue the proposal
+            await this.governor.queue(this.proposalId);
+
+            // Simulate time delay required before execution
+            // Replace 'executionDelay' with your contract's specific delay
+            await mine(executionDelay + 1);
+
+            // Execute the proposal
+            await this.governor.execute(this.proposalId);
+
+            // Verify the proposal is executed
+            expect(await this.governor.state(this.proposalId)).to.equal(7); // 7 for 'Executed'
+        });
+
+
     });
 
 
