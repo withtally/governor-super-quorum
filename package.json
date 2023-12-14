@@ -1,5 +1,11 @@
 {
   "name": "hardhat-project",
+  "version": "1.0.0",
+  "license": "MIT",
+  "author": {
+    "name": "Dennison Bertram",
+    "email": "dennison@tally.xyz"
+  },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
     "hardhat": "^2.19.2",
