@@ -28,8 +28,10 @@ describe("SuperGovernor Contract", function () {
     let executionDelay = 0;
     const votingDelay = 0;
     const votingPeriod = 5; // 5 blocks
+    const extension = 0;
     const quorumFraction = 10;
     const superQuorumFraction = 50;
+    const proposalThreshold = 0;
 
     async function deploySetupFixture() {
         const superQuorum = 60 //60%
@@ -42,7 +44,7 @@ describe("SuperGovernor Contract", function () {
 
         const timelock = await timelock_factory.deploy(0, [], [], owner.address);
 
-        const governor = await SuperGovernor_factory.deploy(await token.getAddress(), await timelock.getAddress(), superQuorum, votingPeriod, votingDelay, 0);
+        const governor = await SuperGovernor_factory.deploy(await token.getAddress(), await timelock.getAddress(), superQuorum, votingPeriod, votingDelay, proposalThreshold,extension);
 
         await timelock.grantRole(await timelock.PROPOSER_ROLE(), await governor.getAddress());
         await timelock.grantRole(await timelock.EXECUTOR_ROLE(), await governor.getAddress());
