@@ -30,11 +30,11 @@ describe("SuperGovernor Contract", function () {
     const votingPeriod = 5; // 5 blocks
     const extension = 0;
     const quorumFraction = 10;
-    const superQuorumFraction = 50;
+    const superQuorumFraction = 60; // 60%
     const proposalThreshold = 0;
 
     async function deploySetupFixture() {
-        const superQuorum = 60 //60%
+        // const superQuorum = 60 //60%
         const [owner, user1] = await ethers.getSigners();
         const token_factory = await ethers.getContractFactory("MyToken");
         const timelock_factory = await ethers.getContractFactory("TimelockController")
@@ -44,7 +44,7 @@ describe("SuperGovernor Contract", function () {
 
         const timelock = await timelock_factory.deploy(0, [], [], owner.address);
 
-        const governor = await SuperGovernor_factory.deploy(await token.getAddress(), await timelock.getAddress(), superQuorum, votingPeriod, votingDelay, proposalThreshold,extension);
+        const governor = await SuperGovernor_factory.deploy(await token.getAddress(), await timelock.getAddress(), superQuorumFraction, votingPeriod, votingDelay, proposalThreshold,extension);
 
         await timelock.grantRole(await timelock.PROPOSER_ROLE(), await governor.getAddress());
         await timelock.grantRole(await timelock.EXECUTOR_ROLE(), await governor.getAddress());
