@@ -22,7 +22,7 @@ abstract contract GovernorVotesSuperQuorumFraction is GovernorVotes {
 
     /// @notice Initializes the contract with a super quorum numerator.
     /// @param quorumNumeratorValue The initial super quorum numerator.
-    constructor(uint256 quorumNumeratorValue) {
+    constructor(uint32 quorumNumeratorValue) {
         _updateSuperQuorumNumerator(quorumNumeratorValue);
     }
 
