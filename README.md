@@ -40,3 +40,16 @@ The `SuperQuorumGovernor` contract is a significant enhancement to the governanc
 npx hardhat compile
 npx hardhat test
 ```
+
+## Use it as package
+
+```bash
+npm add @tallyxyz/super-quorum
+```
+
+Import the contract as:
+
+```solidity
+import "@tallyxyz/contracts/extension/GovernorVotesSuperQuorumFraction.sol";
+```
+
