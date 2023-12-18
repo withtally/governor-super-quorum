@@ -1,6 +1,6 @@
 {
-  "name": "tally-superquorum",
-  "version": "1.0.1",
+  "name": "@tallyxyz/super-quorum",
+  "version": "1.0.2",
   "license": "MIT",
   "author": {
     "name": "Dennison Bertram",
@@ -15,3 +15,5 @@
     "@openzeppelin/contracts": "^5.0.1"
   }
 }
+
+
