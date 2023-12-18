@@ -41,7 +41,7 @@ contract SuperQuorumGovernor is
         uint32 _votingPeriod,
         uint48 _votingDelay,
         uint256 _proposalThreshold,
-        uint48 _initialVoteExtension
+        uint32 _initialVoteExtension
     )
         Governor("MyGovernor")
         GovernorSettings(_votingDelay, _votingPeriod, _proposalThreshold)
