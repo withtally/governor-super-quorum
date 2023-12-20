@@ -76,15 +76,15 @@ contract SuperQuorumGovernor is
         bool hasReachedSuperQuorum = superQuorum(proposalSnapshot(proposalId)) <= forVotes + abstainVotes;
 
         // Override state for super quorum
-        if ( ( proposalState == ProposalState.Succeeded || proposalState == ProposalState.Active ) && hasReachedSuperQuorum && proposalEta(proposalId) != 0) { 
-            return ProposalState.Queued;
-        } else  if (proposalState == ProposalState.Active && hasReachedSuperQuorum) {
+        if (proposalState == ProposalState.Active && hasReachedSuperQuorum) {
+            if(proposalEta(proposalId) != 0){
+                return ProposalState.Queued;
+            }
             return ProposalState.Succeeded;   
-        } else {
-            return proposalState;
         }
-
+        
         return proposalState;
+
     }
 
     // The following functions are overrides required by Solidity.
