@@ -108,7 +108,6 @@ describe("SuperGovernor Contract", function () {
             // Move forward in time past the voting period
             await mine(votingPeriod + 1);
 
-
             // Check if the proposal was successful
             expect(await this.governor.state(this.proposalId)).to.equal(4); // 4 for 'Succeeded'
         });
@@ -246,6 +245,26 @@ describe("SuperGovernor Contract", function () {
 
             // Check that proposal succeded
             expect(await this.governor.state(this.proposalId)).to.equal(4); // 4 for 'Succeded'
+        });
+
+        it("Should received queued from proposal after we queued it on super quorum before voting periods ends", async function () {
+            // Move to the voting period and cast a vote
+            await mine(votingDelay + 1);
+
+            // Queue proposal should revert before vote.
+            await  expect( this.governor.queue(this.proposalId)).to.be.reverted;
+
+            // Vote
+            await this.governor.connect(this.user1).castVote(this.proposalId, 1);
+
+            // Queue the proposal
+            expect(await this.governor.queue(this.proposalId)).to.emit(this.governor, "ProposalQueued")
+
+            // Verify the proposal is succeeded
+            const proposalState = await this.governor.state(this.proposalId);
+
+            // Verify the proposal is queued
+            expect(proposalState).to.equal(5); // 5 for 'Queued'
         });
 
         it("Should not allow votes after super quorum hit", async function () {
