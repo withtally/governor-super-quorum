@@ -52,37 +52,43 @@ contract SuperQuorumGovernor is
         GovernorPreventLateQuorum(_initialVoteExtension)
     {}
 
-    /// @notice Returns the current state of a proposal.
-    /// @dev Overridden to include logic for handling super quorum.
-    /// @param proposalId The ID of the proposal.
-    /// @return Current state of the proposal.
-    function state(
-        uint256 proposalId
-    )
-        public
-        view
-        override(Governor, GovernorTimelockControl)
-        returns (ProposalState)
-    {
-        ProposalState proposalState = super.state(proposalId);
+function state(uint256 proposalId)
+    public
+    view
+    override(Governor, GovernorTimelockControl)
+    returns (ProposalState)
+{
+    ProposalState proposalState = super.state(proposalId);
 
-        (
-            uint256 againstVotes,
-            uint256 forVotes,
-            uint256 abstainVotes
-        ) = proposalVotes(proposalId);
+    (
+        uint256 againstVotes,
+        uint256 forVotes,
+        uint256 abstainVotes
+    ) = proposalVotes(proposalId);
 
-        // This overrides how succeeded is calculated only if we're over superquorum
-        if (
-            proposalState == ProposalState.Active &&
-            (superQuorum(proposalSnapshot(proposalId)) <=
-                forVotes + abstainVotes)
-        ) {
-            return ProposalState.Succeeded;
-        } else {
-            return proposalState;
+    bool hasReachedSuperQuorum = superQuorum(proposalSnapshot(proposalId)) <= forVotes + abstainVotes;
+
+    // Adjusted logic to properly reflect 'Queued' state for Super Quorum proposals.
+    if (proposalState == ProposalState.Active && hasReachedSuperQuorum) {
+        // If a proposal has reached super quorum and is queued, it should be in 'Queued' state.
+        if (proposalEta(proposalId) != 0) {
+            return ProposalState.Queued;
+        }
+        return ProposalState.Succeeded;
+    }
+
+    // The rest of the logic remains unchanged.
+    if (proposalState == ProposalState.Executed) {
+        return ProposalState.Executed;
+    } else if (proposalState == ProposalState.Succeeded) {
+        if (proposalEta(proposalId) != 0) {
+            return ProposalState.Queued;
         }
     }
+
+    return proposalState;
+}
+
 
     // The following functions are overrides required by Solidity.
 
