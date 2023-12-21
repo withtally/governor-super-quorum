@@ -26,7 +26,7 @@ describe("SuperGovernor Contract", function () {
     let superGovernor;
     let owner;
     let executionDelay = 0;
-    const votingDelay = 0;
+    const votingDelay = 2;
     const votingPeriod = 5; // 5 blocks
     const extension = 0;
     const quorumFraction = 10;
@@ -88,12 +88,22 @@ describe("SuperGovernor Contract", function () {
             this.proposalId = prop[0]
         });
 
+        it("Should be able to cancel before voting period starts", async function () {
+            // Initially, the proposal should be in Pending state
+            expect(await this.governor.state(this.proposalId)).to.equal(0); // 0 for 'Pending' 
+
+            // Cancel the proposal
+            await expect( this.governor.cancel(this.proposalId)).to.emit(this.governor, "ProposalCanceled");
+
+            // Verify the proposal is in Canceled state
+            expect(await this.governor.state(this.proposalId)).to.equal(2); // 2 for 'Canceled'
+        });
+
+
 
         it("Should transition from Pending to Active when the voting period starts", async function () {
             // Initially, the proposal should be in Pending state
-
             expect(await this.governor.state(this.proposalId)).to.equal(0); // 0 for 'Pending' 
-
 
             // Move to the voting period
             await mine(votingDelay + 1);
@@ -128,6 +138,10 @@ describe("SuperGovernor Contract", function () {
 
 
         it("Should handle a defeated proposal", async function () {
+
+            // Move to the voting period
+            await mine(votingDelay + 1);
+
             // Move to the voting period and cast a negative vote
             await this.governor.castVote(this.proposalId, 0); // 0 for 'Against'
 
@@ -139,6 +153,10 @@ describe("SuperGovernor Contract", function () {
         });
 
         it("Should queue a successful proposal", async function () {
+
+            // Move to the voting period
+            await mine(votingDelay + 1);
+
             // Cast a positive vote and end the voting period
             await this.governor.castVote(this.proposalId, 1);
             await mine(votingPeriod + 1);
@@ -151,6 +169,10 @@ describe("SuperGovernor Contract", function () {
         });
 
         it("Should succeed when the quorum is met", async function () {
+
+            // Move to the voting period
+            await mine(votingDelay + 1);
+
             // Cast votes meeting/exceeding the quorum requirement
             await this.governor.castVote(this.proposalId, 1); // Assuming this meets the quorum
 
@@ -164,6 +186,8 @@ describe("SuperGovernor Contract", function () {
         it("Should fail when the quorum is not met", async function () {
             // Cast votes, but not enough to meet the quorum
             // await this.governor.castVote(this.proposalId, 1); // Assuming this does not meet the quorum
+            // Move to the voting period
+            await mine(votingDelay + 1);
 
             // Move forward in time past the voting period
             await mine(votingPeriod + 1);
@@ -173,6 +197,9 @@ describe("SuperGovernor Contract", function () {
         });
 
         it("Should queue and execute a successful proposal", async function () {
+            // Move to the voting period
+            await mine(votingDelay + 1);
+
             // Cast a positive vote and end the voting period
             await this.governor.castVote(this.proposalId, 1);
             await mine(votingPeriod + 1);
@@ -298,6 +325,10 @@ describe("SuperGovernor Contract", function () {
         });
 
         it("Should queue and execute a successful superQuorum proposal", async function () {
+
+            // Move to the voting period
+            await mine(votingDelay + 1);
+
             // Cast a positive vote and end the voting period
             await this.governor.connect(this.user1).castVote(this.proposalId, 1);
             await mine(votingPeriod + 1);
