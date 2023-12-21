@@ -92,9 +92,6 @@ describe("SuperGovernor Contract", function () {
         it("Should transition from Pending to Active when the voting period starts", async function () {
             // Initially, the proposal should be in Pending state
 
-            // const prop = await this.governor.proposalDetailsAt(this.proposalId);
-            // console.log(":rocket: ~ file: SuperQuorumGov.ts:337 ~ prop:", prop)
-
             expect(await this.governor.state(this.proposalId)).to.equal(0); // 0 for 'Pending' 
 
 
@@ -321,10 +318,6 @@ describe("SuperGovernor Contract", function () {
 
         it("Should transition from Pending to Active when the voting period starts", async function () {
             // Initially, the proposal should be in Pending state
-
-            // const prop = await this.governor.proposalDetailsAt(this.proposalId);
-            // console.log(":rocket: ~ file: SuperQuorumGov.ts:337 ~ prop:", prop)
-
             expect(await this.governor.state(this.proposalId)).to.equal(0); // 0 for 'Pending' 
 
 
