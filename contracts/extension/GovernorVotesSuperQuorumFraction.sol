@@ -49,11 +49,7 @@ abstract contract GovernorVotesSuperQuorumFraction is GovernorVotes {
     /// @param timepoint The block timestamp for which to calculate the super quorum.
     /// @return The number of votes required to meet the super quorum at the specified timepoint.
     function superQuorum(uint256 timepoint) public view virtual returns (uint256) {
-        uint48 currentTimepoint = clock();
-        if (timepoint < currentTimepoint) {
-            return (token().getPastTotalSupply(timepoint) * superQuorumNumerator(timepoint)) / superQuorumDenominator();
-        }
-        return 0;
+        return (token().getPastTotalSupply(timepoint) * superQuorumNumerator(timepoint)) / superQuorumDenominator();
     }
 
     /// @notice Updates the super quorum numerator.

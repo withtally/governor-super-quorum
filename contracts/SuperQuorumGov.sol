@@ -72,11 +72,8 @@ contract SuperQuorumGovernor is
             uint256 abstainVotes
         ) = proposalVotes(proposalId);
 
-        // Check if proposal has reached super quorum
-        bool hasReachedSuperQuorum = superQuorum(proposalSnapshot(proposalId)) <= forVotes + abstainVotes;
-
         // Override state for super quorum
-        if (proposalState == ProposalState.Active && hasReachedSuperQuorum) {
+        if (proposalState == ProposalState.Active && (superQuorum(proposalSnapshot(proposalId)) <= forVotes + abstainVotes)) {
             if(proposalEta(proposalId) != 0){
                 return ProposalState.Queued;
             }

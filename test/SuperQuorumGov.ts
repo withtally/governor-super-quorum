@@ -88,6 +88,23 @@ describe("SuperGovernor Contract", function () {
             this.proposalId = prop[0]
         });
 
+
+        it("Should transition from Pending to Active when the voting period starts", async function () {
+            // Initially, the proposal should be in Pending state
+
+            // const prop = await this.governor.proposalDetailsAt(this.proposalId);
+            // console.log(":rocket: ~ file: SuperQuorumGov.ts:337 ~ prop:", prop)
+
+            expect(await this.governor.state(this.proposalId)).to.equal(0); // 0 for 'Pending' 
+
+
+            // Move to the voting period
+            await mine(votingDelay + 1);
+
+            // Verify the proposal is in Active state
+            expect(await this.governor.state(this.proposalId)).to.equal(1); // 1 for 'Active'
+        });
+
         it("Should allow voting on a proposal", async function () {
             // Move forward in time to the voting period
             await mine(votingDelay + 1);
@@ -192,6 +209,7 @@ describe("SuperGovernor Contract", function () {
             await expect(this.governor.execute(this.proposalId))
                 .to.be.reverted; // Add specific revert reason if your contract has one
         });
+
     });
 
     describe("Proposal Lifecycle - Super Quorum Function", function () {
@@ -301,8 +319,21 @@ describe("SuperGovernor Contract", function () {
             expect(await this.governor.state(this.proposalId)).to.equal(7); // 7 for 'Executed'
         });
 
+        it("Should transition from Pending to Active when the voting period starts", async function () {
+            // Initially, the proposal should be in Pending state
+
+            // const prop = await this.governor.proposalDetailsAt(this.proposalId);
+            // console.log(":rocket: ~ file: SuperQuorumGov.ts:337 ~ prop:", prop)
+
+            expect(await this.governor.state(this.proposalId)).to.equal(0); // 0 for 'Pending' 
 
 
+            // Move to the voting period
+            await mine(votingDelay + 1);
+
+            // // Verify the proposal is in Active state
+            expect(await this.governor.state(this.proposalId)).to.equal(1); // 1 for 'Active'
+        });
 
     });
 
