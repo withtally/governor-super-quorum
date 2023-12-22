@@ -262,6 +262,7 @@ describe("SuperGovernor Contract", function () {
 
             const prop = await governor.proposalDetailsAt(0);
             this.proposalId = prop[0]
+
         });
 
 
@@ -347,10 +348,58 @@ describe("SuperGovernor Contract", function () {
             expect(await this.governor.state(this.proposalId)).to.equal(7); // 7 for 'Executed'
         });
 
+        it("Should transition from Succeeded to Queued after reaching Super Quorum and being queued", async function () {
+            // Move to the voting period and cast votes to reach super quorum
+            await mine(votingDelay + 1);
+            await this.governor.connect(this.user1).castVote(this.proposalId, 1); // Assume this reaches super quorum
+
+            // Check if the proposal is in Succeeded state
+            expect(await this.governor.state(this.proposalId)).to.equal(4); // 4 for 'Succeeded'
+
+            // Queue the proposal
+            await this.governor.queue(this.proposalId);
+
+            // Verify the proposal is in Queued state
+            expect(await this.governor.state(this.proposalId)).to.equal(5); // 5 for 'Queued'
+        });
+
+        it("Should not allow queuing a proposal that is not in Succeeded state", async function () {
+
+            // Attempt to queue the proposal when it's not in Succeeded state
+            await expect(this.governor.queue(this.proposalId)).to.be.revertedWithCustomError(this.governor, "GovernorUnexpectedProposalState");
+        });
+
+
+        it("Should remain in Executed state after execution, even if super quorum was met", async function () {
+            // Move to the voting period, cast a positive vote to reach super quorum, and end voting period
+            await mine(votingDelay + 1);
+            await this.governor.connect(this.user1).castVote(this.proposalId, 1); // Assume this reaches super quorum
+            await mine(votingPeriod + 1);
+
+            // Queue and execute the proposal
+            await this.governor.queue(this.proposalId);
+            await mine(executionDelay + 1);
+            await this.governor.execute(this.proposalId);
+
+            // Verify the proposal is in Executed state
+            expect(await this.governor.state(this.proposalId)).to.equal(7); // 7 for 'Executed'
+        });
+
+        it("Should transition from Active to Queued directly when Super Quorum is met and proposal is queued", async function () {
+            // Move to the voting period and cast votes to reach super quorum
+            await mine(votingDelay + 1);
+            await this.governor.connect(this.user1).castVote(this.proposalId, 1); // Assume this reaches super quorum
+
+            // Queue the proposal
+            await this.governor.queue(this.proposalId);
+
+            // Verify the proposal is in Queued state
+            expect(await this.governor.state(this.proposalId)).to.equal(5); // 5 for 'Queued'
+        });
+      
         it("Should transition from Pending to Active when the voting period starts", async function () {
             // Initially, the proposal should be in Pending state
             expect(await this.governor.state(this.proposalId)).to.equal(0); // 0 for 'Pending' 
-
 
             // Move to the voting period
             await mine(votingDelay + 1);
@@ -358,6 +407,49 @@ describe("SuperGovernor Contract", function () {
             // // Verify the proposal is in Active state
             expect(await this.governor.state(this.proposalId)).to.equal(1); // 1 for 'Active'
         });
+
+        it("Should transition to Defeated state if there are more Against votes", async function () {
+            // Move to the voting period and cast an against vote
+            await mine(votingDelay + 1);
+            await this.governor.castVote(this.proposalId, 0); // 0 for 'Against'
+
+            // Move forward past the voting period
+            await mine(votingPeriod + 1);
+
+            // Verify the proposal is in Defeated state
+            expect(await this.governor.state(this.proposalId)).to.equal(3); // 3 for 'Defeated'
+        });
+
+        it("Should transition to Canceled state if the proposal is canceled", async function () {
+            // Move to the voting period and cast an against vote
+            let state = await this.governor.state(this.proposalId);
+            console.log("State: ", state)
+            await mine(votingDelay + 1);
+            state = await this.governor.state(this.proposalId);
+
+            console.log("State: ", state)
+
+            // Cancel the proposal
+            await expect(this.governor.connect(this.owner).cancel(this.proposalId)).to.emit(this.governor, "ProposalCanceled").withArgs(this.proposalId);
+
+            // Verify the proposal is in Canceled state
+            expect(await this.governor.state(this.proposalId)).to.equal(2); // 2 for 'Canceled'
+        });
+
+        // it("Should transition to Expired state if not executed within time", async function () {
+        //     // Move to the voting period, cast a positive vote, end the voting period, and queue the proposal
+        //     await mine(votingDelay + 1);
+        //     await this.governor.castVote(this.proposalId, 1); // 1 for 'For'
+        //     await mine(votingPeriod + 1);
+        //     await this.governor.queue(this.proposalId);
+
+        //     // Simulate passing of execution deadline
+        //     // Replace 'executionDeadline' with your contract's specific deadline
+        //     await mine(executionDelay + executionDeadline + 1);
+
+        //     // Verify the proposal is in Expired state
+        //     expect(await this.governor.state(this.proposalId)).to.equal(6); // 6 for 'Expired'
+        // });
 
     });
 

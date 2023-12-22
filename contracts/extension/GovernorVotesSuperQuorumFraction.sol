@@ -50,6 +50,7 @@ abstract contract GovernorVotesSuperQuorumFraction is GovernorVotes {
     /// @return The number of votes required to meet the super quorum at the specified timepoint.
     function superQuorum(uint256 timepoint) public view virtual returns (uint256) {
         return (token().getPastTotalSupply(timepoint) * superQuorumNumerator(timepoint)) / superQuorumDenominator();
+
     }
 
     /// @notice Updates the super quorum numerator.

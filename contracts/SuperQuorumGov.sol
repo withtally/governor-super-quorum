@@ -79,10 +79,9 @@ contract SuperQuorumGovernor is
             }
             return ProposalState.Succeeded;   
         }
-        
         return proposalState;
-
     }
+
 
     // The following functions are overrides required by Solidity.
 
