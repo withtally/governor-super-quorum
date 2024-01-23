@@ -26,30 +26,32 @@ contract SuperQuorumGovernor is
 {
     uint256 private _superQuorumThreshold;
     
-    /// @dev Initializes the governor contract with custom settings.
-    /// @param _token Address of the governance token.
-    /// @param _timelock Address of the timelock controller.
-    /// @param superQuorumThreshold Threshold for the super quorum.
-    /// @param _votingPeriod Duration of the voting period.
-    /// @param _votingDelay Delay before voting on a proposal starts.
-    /// @param _proposalThreshold Minimum number of tokens required to create a proposal.
-    /// @param _initialVoteExtension Initial vote extension duration.
+    /**
+     * @dev Initializes the OZGovernor contract.
+     * @param _name The name of the governor.
+     * @param _token The voting token.
+     * @param _timelock The timelock controller.
+     * @param _initialVotingDelay, 7200, 1 day
+     * @param _initialVotingPeriod, 50400, 1 week 
+     * @param _initialProposalThreshold, 0, proposal threshold
+     * @param _quorumNumeratorValue, 4, numerator value for quorum
+     * @param _superQuorumThreshold, minimum number of votes required for super quorum,
+     * @param _initialVoteExtension,
+     */
     constructor(
-        IVotes _token,
-        TimelockController _timelock,
-        uint256 superQuorumThreshold,
-        uint32 _votingPeriod,
-        uint48 _votingDelay,
-        uint256 _proposalThreshold,
-        uint32 _initialVoteExtension
+        string memory _name, IVotes _token, TimelockController _timelock,
+        uint48 _initialVotingDelay, uint32 _initialVotingPeriod, uint256 _initialProposalThreshold,
+        uint256 _quorumNumeratorValue,   
+        uint32 _superQuorumThreshold,     
+        uint48 _initialVoteExtension
     )
-        Governor("MyGovernor")
-        GovernorSettings(_votingDelay, _votingPeriod, _proposalThreshold)
+        Governor(_name)
+        GovernorSettings(_initialVotingDelay, _initialVotingPeriod, _initialProposalThreshold)
         GovernorVotes(_token)
-        GovernorVotesQuorumFraction(10)
-        GovernorVotesSuperQuorumFraction(50)
-        GovernorTimelockControl(_timelock)
+        GovernorVotesQuorumFraction(_quorumNumeratorValue)
         GovernorPreventLateQuorum(_initialVoteExtension)
+        GovernorVotesSuperQuorumFraction(_superQuorumThreshold)
+        GovernorTimelockControl(_timelock)
     {}
 
     /// @notice Returns the current state of a proposal.
