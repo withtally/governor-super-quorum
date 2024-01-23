@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Original design by OpenZeppelin
-// Modified by Dennison Bertram @ Tally.xyz
+// Modified by Dennison Bertram and Arthur Abeilice  @ Tally.xyz
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
@@ -8,10 +8,10 @@ import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import "@openzeppelin/contracts/utils/structs/Checkpoints.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-/// @title GovernorVotesSuperQuorumFraction
+/// @title GovernorVotesSuperQuorumFractionUpgradeable
 /// @notice Extends GovernorVotes to add super quorum functionality based on a fraction of the total token supply.
 /// @dev This contract adds an additional quorum mechanism to the standard GovernorVotes functionality.
-abstract contract GovernorVotesSuperQuorumFraction is Initializable, GovernorVotes {
+abstract contract GovernorVotesSuperQuorumFractionUpgradeable is Initializable, GovernorVotes {
     using Checkpoints for Checkpoints.Trace208;
 
     Checkpoints.Trace208 private _superQuorumNumeratorHistory;
@@ -27,7 +27,13 @@ abstract contract GovernorVotesSuperQuorumFraction is Initializable, GovernorVot
         _updateSuperQuorumNumerator(quorumNumeratorValue);
     }
 
-    
+    /**
+     * @dev Sets the values for {quorumNumeratorValue}.
+     */
+    function __GVSQFU_init(uint32 quorumNumeratorValue)  internal onlyInitializing {
+        // __ERC20_init_unchained(name_, symbol_);
+        _updateSuperQuorumNumerator(quorumNumeratorValue);
+    }
 
     /// @notice Returns the current super quorum numerator.
     /// @return The current super quorum numerator value.
