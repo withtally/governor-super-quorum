@@ -19,7 +19,7 @@ import { ethers } from "hardhat";
 //    7  Executed
 // }
 
-describe("SuperGovernor Contract", function () {
+describe("SuperGovernor Contract Upgradeable", function () {
     let SuperGovernor;
     let superGovernor;
     let owner;
@@ -36,15 +36,18 @@ describe("SuperGovernor Contract", function () {
         // const superQuorum = 60 //60%
         const [owner, user1] = await ethers.getSigners();
         const token_factory = await ethers.getContractFactory("MyToken");
-        const timelock_factory = await ethers.getContractFactory("TimelockController")
-        const SuperQuorumGovernor_factory = await ethers.getContractFactory("SuperQuorumGovernor");
+        const timelock_factory = await ethers.getContractFactory("TimelockUpgradeable")
+        const SuperQuorumGovernor_factory = await ethers.getContractFactory("SuperQuorumGovernorUpgradeable");
 
         const token = await token_factory.deploy(owner.address);
 
-        const timelock = await timelock_factory.deploy(0, [], [], owner.address);
+        const timelock = await timelock_factory.deploy();
 
-        const governor = await SuperQuorumGovernor_factory.deploy(
-            name,
+        await timelock.initialize(0, [], [], owner.address);
+
+        const governor = await SuperQuorumGovernor_factory.deploy();
+
+        await governor.initialize(name,
             await token.getAddress(),
             await timelock.getAddress(),
             votingDelay,
@@ -52,7 +55,7 @@ describe("SuperGovernor Contract", function () {
             proposalThreshold,
             quorumFraction,
             superQuorumFraction,
-            extension);
+            extension)
 
         await timelock.grantRole(await timelock.PROPOSER_ROLE(), await governor.getAddress());
         await timelock.grantRole(await timelock.EXECUTOR_ROLE(), await governor.getAddress());
@@ -68,6 +71,24 @@ describe("SuperGovernor Contract", function () {
             expect(await governor.votingPeriod()).to.equal(votingPeriod);
             expect(await governor["quorumNumerator()"]()).to.equal(quorumFraction);
         });
+
+        it("Should not allow repeat initalization", async function () {
+            const { governor, token, timelock, owner } = await loadFixture(deploySetupFixture);
+
+            await expect(governor.initialize(name,
+                await token.getAddress(),
+                await timelock.getAddress(),
+                votingDelay,
+                votingPeriod,
+                proposalThreshold,
+                quorumFraction,
+                superQuorumFraction,
+                extension)).to.be.reverted;
+
+
+            await expect(timelock.initialize(0, [], [], owner.address)).to.be.reverted;
+        })
+
     });
 
     describe("Proposal Lifecycle - Normal Function", function () {

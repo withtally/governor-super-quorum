@@ -1,58 +1,73 @@
-// SPDX-License-Identifier: MIT
+// // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/governance/Governor.sol";
-import "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
-import "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
-import "@openzeppelin/contracts/governance/extensions/GovernorStorage.sol";
-import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
-import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
-import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
-import "@openzeppelin/contracts/governance/extensions/GovernorPreventLateQuorum.sol";
-import "./extension/GovernorVotesSuperQuorumFraction.sol";
+// Import OpenZeppelin governance contracts
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/governance/GovernorUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorSettingsUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorCountingSimpleUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorStorageUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesQuorumFractionUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorTimelockControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorPreventLateQuorumUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/governance/TimelockControllerUpgradeable.sol";
 
-/// @title SuperQuorumGovernor
-/// @dev Extends OpenZeppelin's Governor contract with super quorum functionality.
-contract SuperQuorumGovernor is
-    Governor,
-    GovernorSettings,
-    GovernorCountingSimple,
-    GovernorStorage,
-    GovernorVotes,
-    GovernorVotesQuorumFraction,
-    GovernorVotesSuperQuorumFraction,
-    GovernorPreventLateQuorum,
-    GovernorTimelockControl
+// tally super quorum upgradeable:
+import "./extension/GovernorVotesSuperQuorumFractionUpgradeable.sol";
+
+/**
+ * @title OzGovernorSuperQuorum
+ * @dev OzGovernorSuperQuorum is a smart contract that extends OpenZeppelin's Governor with additional features
+ * for voting, timelock, and quorum.
+ */
+contract SuperQuorumGovernorUpgradeable is
+    Initializable,
+    GovernorUpgradeable,
+    GovernorSettingsUpgradeable,
+    GovernorCountingSimpleUpgradeable,
+    GovernorStorageUpgradeable,
+    GovernorVotesUpgradeable,
+    GovernorPreventLateQuorumUpgradeable,
+    GovernorVotesQuorumFractionUpgradeable,
+    GovernorVotesSuperQuorumFractionUpgradeable,
+    GovernorTimelockControlUpgradeable
 {
-    uint256 private _superQuorumThreshold;
-    
     /**
      * @dev Initializes the OZGovernor contract.
      * @param _name The name of the governor.
      * @param _token The voting token.
      * @param _timelock The timelock controller.
      * @param _initialVotingDelay, 7200, 1 day
-     * @param _initialVotingPeriod, 50400, 1 week 
+     * @param _initialVotingPeriod, 50400, 1 week
      * @param _initialProposalThreshold, 0, proposal threshold
      * @param _quorumNumeratorValue, 4, numerator value for quorum
      * @param _superQuorumThreshold, minimum number of votes required for super quorum,
      * @param _initialVoteExtension,
      */
-    constructor(
-        string memory _name, IVotes _token, TimelockController _timelock,
-        uint48 _initialVotingDelay, uint32 _initialVotingPeriod, uint256 _initialProposalThreshold,
-        uint256 _quorumNumeratorValue,   
-        uint32 _superQuorumThreshold,     
+    function initialize(
+        string memory _name,
+        IVotes _token,
+        TimelockControllerUpgradeable _timelock,
+        uint48 _initialVotingDelay,
+        uint32 _initialVotingPeriod,
+        uint256 _initialProposalThreshold,
+        uint256 _quorumNumeratorValue,
+        uint32 _superQuorumThreshold,
         uint48 _initialVoteExtension
-    )
-        Governor(_name)
-        GovernorSettings(_initialVotingDelay, _initialVotingPeriod, _initialProposalThreshold)
-        GovernorVotes(_token)
-        GovernorVotesQuorumFraction(_quorumNumeratorValue)
-        GovernorPreventLateQuorum(_initialVoteExtension)
-        GovernorVotesSuperQuorumFraction(_superQuorumThreshold)
-        GovernorTimelockControl(_timelock)
-    {}
+    ) public virtual initializer {
+        __Governor_init(_name);
+        __GovernorSettings_init(
+            _initialVotingDelay,
+            _initialVotingPeriod,
+            _initialProposalThreshold
+        );
+        __GovernorVotes_init(_token);
+        __GovernorVotesQuorumFraction_init(_quorumNumeratorValue);
+        __GovernorPreventLateQuorum_init(_initialVoteExtension);
+        __GovernorVotesSuperQuorumFractionUpgradeable_init(_superQuorumThreshold);
+        __GovernorTimelockControl_init(_timelock);
+    }
 
     /**
      * @notice Retrieves the voting delay configured in the settings.
@@ -61,7 +76,7 @@ contract SuperQuorumGovernor is
     function votingDelay()
         public
         view
-        override(Governor, GovernorSettings)
+        override(GovernorUpgradeable, GovernorSettingsUpgradeable)
         returns (uint256)
     {
         return super.votingDelay();
@@ -74,7 +89,7 @@ contract SuperQuorumGovernor is
     function votingPeriod()
         public
         view
-        override(Governor, GovernorSettings)
+        override(GovernorUpgradeable, GovernorSettingsUpgradeable)
         returns (uint256)
     {
         return super.votingPeriod();
@@ -85,10 +100,12 @@ contract SuperQuorumGovernor is
      * @param blockNumber The block number for which to determine the quorum.
      * @return The required quorum at the given block number.
      */
-    function quorum(uint256 blockNumber)
+    function quorum(
+        uint256 blockNumber
+    )
         public
         view
-        override(Governor, GovernorVotesQuorumFraction)
+        override(GovernorUpgradeable, GovernorVotesQuorumFractionUpgradeable)
         returns (uint256)
     {
         return super.quorum(blockNumber);
@@ -103,7 +120,7 @@ contract SuperQuorumGovernor is
     )
         public
         view
-        override(Governor, GovernorTimelockControl)
+        override(GovernorUpgradeable, GovernorTimelockControlUpgradeable)
         returns (ProposalState)
     {
         ProposalState proposalState = super.state(proposalId);
@@ -120,13 +137,13 @@ contract SuperQuorumGovernor is
             (superQuorum(proposalSnapshot(proposalId)) <=
                 forVotes + abstainVotes)
         ) {
-            if(proposalEta(proposalId) != 0){
+            if (proposalEta(proposalId) != 0) {
                 return ProposalState.Queued;
             }
             return ProposalState.Succeeded;
+        } else {
+            return proposalState;
         }
-
-        return proposalState;
     }
 
     /**
@@ -134,12 +151,9 @@ contract SuperQuorumGovernor is
      * @param proposalId The ID of the proposal to check.
      * @return A boolean indicating whether the proposal needs to be queued.
      */
-    function proposalNeedsQueuing(uint256 proposalId)
-        public
-        view
-        override(Governor, GovernorTimelockControl)
-        returns (bool)
-    {
+    function proposalNeedsQueuing(
+        uint256 proposalId
+    ) public view override(GovernorUpgradeable, GovernorTimelockControlUpgradeable) returns (bool) {
         return super.proposalNeedsQueuing(proposalId);
     }
 
@@ -150,7 +164,7 @@ contract SuperQuorumGovernor is
     function proposalThreshold()
         public
         view
-        override(Governor, GovernorSettings)
+        override(GovernorUpgradeable, GovernorSettingsUpgradeable)
         returns (uint256)
     {
         return super.proposalThreshold();
@@ -165,12 +179,15 @@ contract SuperQuorumGovernor is
      * @param proposer The address of the proposer.
      * @return The ID of the newly created proposal.
      */
-    function _propose(address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description, address proposer)
-        internal
-        override(Governor, GovernorStorage)
-        returns (uint256)
-    {
-        return super._propose(targets, values, calldatas, description, proposer);
+    function _propose(
+        address[] memory targets,
+        uint256[] memory values,
+        bytes[] memory calldatas,
+        string memory description,
+        address proposer
+    ) internal override(GovernorUpgradeable, GovernorStorageUpgradeable) returns (uint256) {
+        return
+            super._propose(targets, values, calldatas, description, proposer);
     }
 
     /**
@@ -182,12 +199,21 @@ contract SuperQuorumGovernor is
      * @param descriptionHash The hash of the proposal description.
      * @return The ID of the timelock transaction.
      */
-    function _queueOperations(uint256 proposalId, address[] memory targets, uint256[] memory values, bytes[] memory calldatas, bytes32 descriptionHash)
-        internal
-        override(Governor, GovernorTimelockControl)
-        returns (uint48)
-    {
-        return super._queueOperations(proposalId, targets, values, calldatas, descriptionHash);
+    function _queueOperations(
+        uint256 proposalId,
+        address[] memory targets,
+        uint256[] memory values,
+        bytes[] memory calldatas,
+        bytes32 descriptionHash
+    ) internal override(GovernorUpgradeable, GovernorTimelockControlUpgradeable) returns (uint48) {
+        return
+            super._queueOperations(
+                proposalId,
+                targets,
+                values,
+                calldatas,
+                descriptionHash
+            );
     }
 
     /**
@@ -198,11 +224,20 @@ contract SuperQuorumGovernor is
      * @param calldatas The encoded data of the interactions.
      * @param descriptionHash The hash of the proposal description.
      */
-    function _executeOperations(uint256 proposalId, address[] memory targets, uint256[] memory values, bytes[] memory calldatas, bytes32 descriptionHash)
-        internal
-        override(Governor, GovernorTimelockControl)
-    {
-        super._executeOperations(proposalId, targets, values, calldatas, descriptionHash);
+    function _executeOperations(
+        uint256 proposalId,
+        address[] memory targets,
+        uint256[] memory values,
+        bytes[] memory calldatas,
+        bytes32 descriptionHash
+    ) internal override(GovernorUpgradeable, GovernorTimelockControlUpgradeable) {
+        super._executeOperations(
+            proposalId,
+            targets,
+            values,
+            calldatas,
+            descriptionHash
+        );
     }
 
     /**
@@ -213,11 +248,12 @@ contract SuperQuorumGovernor is
      * @param descriptionHash The hash of the proposal description.
      * @return The ID of the canceled proposal.
      */
-    function _cancel(address[] memory targets, uint256[] memory values, bytes[] memory calldatas, bytes32 descriptionHash)
-        internal
-        override(Governor, GovernorTimelockControl)
-        returns (uint256)
-    {
+    function _cancel(
+        address[] memory targets,
+        uint256[] memory values,
+        bytes[] memory calldatas,
+        bytes32 descriptionHash
+    ) internal override(GovernorUpgradeable, GovernorTimelockControlUpgradeable) returns (uint256) {
         return super._cancel(targets, values, calldatas, descriptionHash);
     }
 
@@ -236,24 +272,27 @@ contract SuperQuorumGovernor is
         uint8 support,
         string memory reason,
         bytes memory params
-    )         
+    )
         internal
         virtual
-        override(Governor, GovernorPreventLateQuorum)
-        returns (uint256) {
-        return super._castVote(proposalId, account, support, reason,params);
+        override(GovernorUpgradeable, GovernorPreventLateQuorumUpgradeable)
+        returns (uint256)
+    {
+        return super._castVote(proposalId, account, support, reason, params);
     }
 
     /**
-     * 
+     *
      * @notice Retrieves the deadline for submitting proposals.
      * @param proposalId The ID of the proposal to query.
      * @return The deadline for submitting proposals.
      */
-    function proposalDeadline(uint256 proposalId)
+    function proposalDeadline(
+        uint256 proposalId
+    )
         public
         view
-        override(Governor,GovernorPreventLateQuorum)
+        override(GovernorUpgradeable, GovernorPreventLateQuorumUpgradeable)
         returns (uint256)
     {
         return super.proposalDeadline(proposalId);
@@ -266,7 +305,7 @@ contract SuperQuorumGovernor is
     function _executor()
         internal
         view
-        override(Governor, GovernorTimelockControl)
+        override(GovernorUpgradeable, GovernorTimelockControlUpgradeable)
         returns (address)
     {
         return super._executor();

@@ -24,7 +24,7 @@ abstract contract GovernorVotesSuperQuorumFractionUpgradeable is Initializable, 
     /**
      * @dev Sets the values for {quorumNumeratorValue}.
      */
-    function __GVSQFU_init(uint32 quorumNumeratorValue)  internal onlyInitializing {
+    function __GovernorVotesSuperQuorumFractionUpgradeable_init(uint32 quorumNumeratorValue)  internal onlyInitializing {
         _updateSuperQuorumNumerator(quorumNumeratorValue);
     }
 
