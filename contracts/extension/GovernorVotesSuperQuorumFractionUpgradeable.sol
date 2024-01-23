@@ -3,15 +3,15 @@
 // Modified by Dennison Bertram and Arthur Abeilice  @ Tally.xyz
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
 import "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import "@openzeppelin/contracts/utils/structs/Checkpoints.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesUpgradeable.sol";
 
 /// @title GovernorVotesSuperQuorumFractionUpgradeable
-/// @notice Extends GovernorVotes to add super quorum functionality based on a fraction of the total token supply.
-/// @dev This contract adds an additional quorum mechanism to the standard GovernorVotes functionality.
-abstract contract GovernorVotesSuperQuorumFractionUpgradeable is Initializable, GovernorVotes {
+/// @notice Extends GovernorVotesUpgradeable to add super quorum functionality based on a fraction of the total token supply.
+/// @dev This contract adds an additional quorum mechanism to the standard GovernorVotesUpgradeable functionality.
+abstract contract GovernorVotesSuperQuorumFractionUpgradeable is Initializable, GovernorVotesUpgradeable {
     using Checkpoints for Checkpoints.Trace208;
 
     Checkpoints.Trace208 private _superQuorumNumeratorHistory;
@@ -21,17 +21,10 @@ abstract contract GovernorVotesSuperQuorumFractionUpgradeable is Initializable, 
     /// @dev Thrown when the provided super quorum numerator is not valid.
     error GovernorInvalidSuperQuorumFraction(uint256 quorumNumerator, uint256 superQuorumDenominator);
 
-    /// @notice Initializes the contract with a super quorum numerator.
-    /// @param quorumNumeratorValue The initial super quorum numerator.
-    constructor(uint32 quorumNumeratorValue) {
-        _updateSuperQuorumNumerator(quorumNumeratorValue);
-    }
-
     /**
      * @dev Sets the values for {quorumNumeratorValue}.
      */
     function __GVSQFU_init(uint32 quorumNumeratorValue)  internal onlyInitializing {
-        // __ERC20_init_unchained(name_, symbol_);
         _updateSuperQuorumNumerator(quorumNumeratorValue);
     }
 
