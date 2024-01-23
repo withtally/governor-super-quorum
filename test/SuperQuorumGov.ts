@@ -421,19 +421,20 @@ describe("SuperGovernor Contract", function () {
         });
 
         it("Should transition to Canceled state if the proposal is canceled", async function () {
-            // Move to the voting period and cast an against vote
-            let state = await this.governor.state(this.proposalId);
-            console.log("State: ", state)
-            await mine(votingDelay + 1);
-            state = await this.governor.state(this.proposalId);
-
-            console.log("State: ", state)
-
             // Cancel the proposal
             await expect(this.governor.connect(this.owner).cancel(this.proposalId)).to.emit(this.governor, "ProposalCanceled").withArgs(this.proposalId);
 
             // Verify the proposal is in Canceled state
             expect(await this.governor.state(this.proposalId)).to.equal(2); // 2 for 'Canceled'
+        });
+
+
+        it("Should not allow to Cancel when proposal is after votingDelay", async function () {
+            await mine(votingDelay + 1);
+
+            // Cancel the proposal
+            await expect(this.governor.connect(this.owner).cancel(this.proposalId)).to.be.reverted;
+
         });
 
         // it("Should transition to Expired state if not executed within time", async function () {
