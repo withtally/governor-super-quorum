@@ -19,7 +19,8 @@ import "./extension/GovernorVotesSuperQuorumFractionUpgradeable.sol";
  * @dev OzGovernorSuperQuorum is a smart contract that extends OpenZeppelin's Governor with additional features
  * for voting, timelock, and quorum.
  */
-contract OzGovernorSuperQuorumUpgradeable is Initializable,
+contract SuperQuorumGovernorUpgradeable is 
+    Initializable,
     GovernorUpgradeable, 
     GovernorSettingsUpgradeable,
     GovernorCountingSimpleUpgradeable,
