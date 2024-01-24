@@ -12,5 +12,8 @@
     "@openzeppelin/contracts-upgradeable": "^5.0.1",
     "hardhat": "^2.19.2",
     "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.0.5"
   }
 }
