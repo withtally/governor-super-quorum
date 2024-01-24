@@ -15,10 +15,21 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "18.19.0"
+
+      - name: "Cache pnpm modules"
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.pnpm-store
+            artifacts
+            **/node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
       - name: "Install pnpm"
         run: "npm install -g pnpm"
       - name: "setup packages"
         run: "pnpm install"
       - name: "Run tests"
         run: "pnpm test"
-
