@@ -445,18 +445,24 @@ describe("SuperGovernor Contract", function () {
 
         });
 
+        //NOTE: OZ Timelock controller does not have an expired state natively
+
         // it("Should transition to Expired state if not executed within time", async function () {
         //     // Move to the voting period, cast a positive vote, end the voting period, and queue the proposal
         //     await mine(votingDelay + 1);
-        //     await this.governor.castVote(this.proposalId, 1); // 1 for 'For'
-        //     await mine(votingPeriod + 1);
+        //     await this.governor.connect(this.owner).castVote(this.proposalId, 1); // 1 for 'For'
+        //     await this.governor.connect(this.user1).castVote(this.proposalId, 1); // 1 for 'For'
+
+        //     expect(await this.governor.state(this.proposalId)).to.equal(4); // 4 for 'Succeeded' after super quorum
+        //     await mine(votingPeriod+1);
+
         //     await this.governor.queue(this.proposalId);
 
-        //     // Simulate passing of execution deadline
-        //     // Replace 'executionDeadline' with your contract's specific deadline
-        //     await mine(executionDelay + executionDeadline + 1);
+        //     // // Simulate passing of execution deadline
+        //     // // Replace 'executionDeadline' with your contract's specific deadline
+        //     await mine(executionDelay + 1000000 + 1);
 
-        //     // Verify the proposal is in Expired state
+        //     // // Verify the proposal is in Expired state
         //     expect(await this.governor.state(this.proposalId)).to.equal(6); // 6 for 'Expired'
         // });
 
