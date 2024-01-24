@@ -35,12 +35,12 @@ export async function shouldInitialize(fixture: () => Promise<SetupFixtureReturn
             await expect(governor.initialize(name,
                 await token.getAddress(),
                 await timelock.getAddress(),
-                votingDelay,
+                [votingDelay, extension],
                 votingPeriod,
                 proposalThreshold,
                 quorumFraction,
                 superQuorumFraction,
-                extension)).to.be.reverted;
+            )).to.be.reverted;
 
 
             await expect(timelock.initialize(0, [], [], owner.address)).to.be.reverted;

@@ -31,33 +31,31 @@ contract SuperQuorumGovernor is
      * @param _name The name of the governor.
      * @param _token The voting token.
      * @param _timelock The timelock controller.
-     * @param _initialVotingDelay, 7200, 1 day
+     * @param voteDelayAndExtension, An array to bypass stack too deep error: [_initialVotingDelay _initialVoteExtension]
      * @param _initialVotingPeriod, 50400, 1 week
      * @param _initialProposalThreshold, 0, proposal threshold
      * @param _quorumNumeratorValue, 4, numerator value for quorum
      * @param _superQuorumNumerator, minimum number of votes required for super quorum,
-     * @param _initialVoteExtension,
      */
     constructor(
         string memory _name,
         IVotes _token,
         TimelockController _timelock,
-        uint48 _initialVotingDelay,
+        uint48[] memory voteDelayAndExtension, //  [_initialVotingDelay _initialVoteExtension]
         uint32 _initialVotingPeriod,
         uint256 _initialProposalThreshold,
         uint256 _quorumNumeratorValue,
-        uint32 _superQuorumNumerator,
-        uint48 _initialVoteExtension
+        uint32 _superQuorumNumerator
     )
         Governor(_name)
         GovernorSettings(
-            _initialVotingDelay,
+            voteDelayAndExtension[0],
             _initialVotingPeriod,
             _initialProposalThreshold
         )
         GovernorVotes(_token)
         GovernorVotesQuorumFraction(_quorumNumeratorValue)
-        GovernorPreventLateQuorum(_initialVoteExtension)
+        GovernorPreventLateQuorum(voteDelayAndExtension[1])
         GovernorVotesSuperQuorumFraction(_superQuorumNumerator)
         GovernorTimelockControl(_timelock)
     {}

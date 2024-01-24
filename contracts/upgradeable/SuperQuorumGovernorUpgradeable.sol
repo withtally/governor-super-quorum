@@ -38,33 +38,31 @@ contract SuperQuorumGovernorUpgradeable is
      * @param _name The name of the governor.
      * @param _token The voting token.
      * @param _timelock The timelock controller.
-     * @param _initialVotingDelay, 7200, 1 day
+     * @param voteDelayAndExtension, An array to bypass stack too deep error: [_initialVotingDelay _initialVoteExtension]
      * @param _initialVotingPeriod, 50400, 1 week
      * @param _initialProposalThreshold, 0, proposal threshold
      * @param _quorumNumeratorValue, 4, numerator value for quorum
      * @param _superQuorumThreshold, minimum number of votes required for super quorum,
-     * @param _initialVoteExtension,
      */
     function initialize(
         string memory _name,
         IVotes _token,
         TimelockControllerUpgradeable _timelock,
-        uint48 _initialVotingDelay,
+        uint48[] memory voteDelayAndExtension,
         uint32 _initialVotingPeriod,
         uint256 _initialProposalThreshold,
         uint256 _quorumNumeratorValue,
-        uint32 _superQuorumThreshold,
-        uint48 _initialVoteExtension
+        uint32 _superQuorumThreshold
     ) public virtual initializer {
         __Governor_init(_name);
         __GovernorSettings_init(
-            _initialVotingDelay,
+            voteDelayAndExtension[0],
             _initialVotingPeriod,
             _initialProposalThreshold
         );
         __GovernorVotes_init(_token);
         __GovernorVotesQuorumFraction_init(_quorumNumeratorValue);
-        __GovernorPreventLateQuorum_init(_initialVoteExtension);
+        __GovernorPreventLateQuorum_init(voteDelayAndExtension[1]);
         __GovernorVotesSuperQuorumFraction_init(_superQuorumThreshold);
         __GovernorTimelockControl_init(_timelock);
     }
@@ -153,7 +151,12 @@ contract SuperQuorumGovernorUpgradeable is
      */
     function proposalNeedsQueuing(
         uint256 proposalId
-    ) public view override(GovernorUpgradeable, GovernorTimelockControlUpgradeable) returns (bool) {
+    )
+        public
+        view
+        override(GovernorUpgradeable, GovernorTimelockControlUpgradeable)
+        returns (bool)
+    {
         return super.proposalNeedsQueuing(proposalId);
     }
 
@@ -185,7 +188,11 @@ contract SuperQuorumGovernorUpgradeable is
         bytes[] memory calldatas,
         string memory description,
         address proposer
-    ) internal override(GovernorUpgradeable, GovernorStorageUpgradeable) returns (uint256) {
+    )
+        internal
+        override(GovernorUpgradeable, GovernorStorageUpgradeable)
+        returns (uint256)
+    {
         return
             super._propose(targets, values, calldatas, description, proposer);
     }
@@ -205,7 +212,11 @@ contract SuperQuorumGovernorUpgradeable is
         uint256[] memory values,
         bytes[] memory calldatas,
         bytes32 descriptionHash
-    ) internal override(GovernorUpgradeable, GovernorTimelockControlUpgradeable) returns (uint48) {
+    )
+        internal
+        override(GovernorUpgradeable, GovernorTimelockControlUpgradeable)
+        returns (uint48)
+    {
         return
             super._queueOperations(
                 proposalId,
@@ -230,7 +241,10 @@ contract SuperQuorumGovernorUpgradeable is
         uint256[] memory values,
         bytes[] memory calldatas,
         bytes32 descriptionHash
-    ) internal override(GovernorUpgradeable, GovernorTimelockControlUpgradeable) {
+    )
+        internal
+        override(GovernorUpgradeable, GovernorTimelockControlUpgradeable)
+    {
         super._executeOperations(
             proposalId,
             targets,
@@ -253,7 +267,11 @@ contract SuperQuorumGovernorUpgradeable is
         uint256[] memory values,
         bytes[] memory calldatas,
         bytes32 descriptionHash
-    ) internal override(GovernorUpgradeable, GovernorTimelockControlUpgradeable) returns (uint256) {
+    )
+        internal
+        override(GovernorUpgradeable, GovernorTimelockControlUpgradeable)
+        returns (uint256)
+    {
         return super._cancel(targets, values, calldatas, descriptionHash);
     }
 

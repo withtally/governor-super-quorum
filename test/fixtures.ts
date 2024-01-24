@@ -31,12 +31,12 @@ export async function deployUpgradableSetupFixture(): Promise<SetupFixtureReturn
     await governor.initialize(name,
         await token.getAddress(),
         await timelock.getAddress(),
-        votingDelay,
+        [votingDelay, extension],
         votingPeriod,
         proposalThreshold,
         quorumFraction,
         superQuorumFraction,
-        extension)
+    )
 
     await timelock.grantRole(await timelock.PROPOSER_ROLE(), await governor.getAddress());
     await timelock.grantRole(await timelock.EXECUTOR_ROLE(), await governor.getAddress());
@@ -68,12 +68,12 @@ export async function deployNormalSetupFixture() {
         name,
         await token.getAddress(),
         await timelock.getAddress(),
-        votingDelay,
+        [votingDelay, extension],
         votingPeriod,
         proposalThreshold,
         quorumFraction,
         superQuorumFraction,
-        extension);
+    );
 
     await timelock.grantRole(await timelock.PROPOSER_ROLE(), await governor.getAddress());
     await timelock.grantRole(await timelock.EXECUTOR_ROLE(), await governor.getAddress());
