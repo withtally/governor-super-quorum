@@ -5,13 +5,14 @@ const config: HardhatUserConfig = {
   solidity: {
     version: "0.8.20",
     settings: {
+      // viaIR: true, // TODO: prefer to not need this
       optimizer: {
         enabled: true,
         runs: 200
       }
     }
   }
-  
+
 };
 
 export default config;
