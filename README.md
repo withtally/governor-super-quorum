@@ -6,6 +6,10 @@
 
 The `SuperQuorumGovernor` smart contract is an innovative extension of the standard governance model provided by OpenZeppelin. It introduces the concept of "Super Quorum" in governance proposals. This higher quorum threshold is designed to ensure that only proposals with substantial backing and consensus are approved, particularly in critical decision-making scenarios. The contract is developed in Solidity ^0.8.20 and is an integration of OpenZeppelin's governance contracts, including Governor, GovernorSettings, GovernorCountingSimple, GovernorStorage, GovernorVotes, GovernorVotesQuorumFraction, and GovernorTimelockControl.
 
+## Upgradeable Verision included
+
+There are two folders for both a regular version that deploys with a constructore function, and a second version designed to be used in a clone factory that utilizes an initializer. 
+
 ## Goal of the New Addition
 
 The `GovernorVotesSuperQuorumFraction` module adds a robust layer to the governance process by implementing a super quorum threshold, which is significantly higher than the standard quorum. This addition is crucial for enhancing governance security and decision-making quality, especially for critical or sensitive proposals within decentralized organizations or protocols. By setting a higher consensus requirement, it ensures that critical decisions are made with a broader agreement among stakeholders, adding an extra layer of security and stability to the governance process.
@@ -47,9 +51,20 @@ npx hardhat test
 npm add @tallyxyz/super-quorum
 ```
 
-Import the contract as:
+Import the standard contract:
 
 ```solidity
-import "@tallyxyz/contracts/extension/GovernorVotesSuperQuorumFraction.sol";
+import "@tallyxyz/contracts/standard/SuperQuorumGovernor.sol";
+// as extension:
+import "@tallyxyz/contracts/standard/extension/GovernorVotesSuperQuorumFraction.sol";
 ```
+
+Using the upgradeable version:
+```solidity
+import "@tallyxyz/contracts/upgradeable/SuperQuorumGovernorUpgradeable.sol";
+// as extension:
+import "@tallyxyz/contracts/upgradeable/extension/GovernorVotesSuperQuorumFractionUpgradeable.sol";
+```
+
+import the super governor !
 
