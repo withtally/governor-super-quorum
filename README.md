@@ -51,9 +51,20 @@ npx hardhat test
 npm add @tallyxyz/super-quorum
 ```
 
-Import the contract as:
+Import the standard contract:
 
 ```solidity
-import "@tallyxyz/contracts/extension/GovernorVotesSuperQuorumFraction.sol";
+import "@tallyxyz/contracts/standard/SuperQuorumGovernor.sol";
+// as extension:
+import "@tallyxyz/contracts/standard/extension/GovernorVotesSuperQuorumFraction.sol";
 ```
+
+Using the upgradeable version:
+```solidity
+import "@tallyxyz/contracts/upgradeable/SuperQuorumGovernorUpgradeable.sol";
+// as extension:
+import "@tallyxyz/contracts/upgradeable/extension/GovernorVotesSuperQuorumFractionUpgradeable.sol";
+```
+
+import the super governor !
 
