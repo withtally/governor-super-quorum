@@ -65,7 +65,7 @@ contract SuperQuorumGovernorUpgradeable is
         __GovernorVotes_init(_token);
         __GovernorVotesQuorumFraction_init(_quorumNumeratorValue);
         __GovernorPreventLateQuorum_init(_initialVoteExtension);
-        __GovernorVotesSuperQuorumFractionUpgradeable_init(_superQuorumThreshold);
+        __GovernorVotesSuperQuorumFraction_init(_superQuorumThreshold);
         __GovernorTimelockControl_init(_timelock);
     }
 
