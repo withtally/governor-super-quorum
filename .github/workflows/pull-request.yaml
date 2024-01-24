@@ -16,16 +16,17 @@ jobs:
         with:
           node-version: "18.19.0"
 
-      - name: "Cache pnpm modules"
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.pnpm-store
-            artifacts
-            **/node_modules
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
+      # did not improve speed in this case.
+      # - name: "Cache pnpm modules"
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: |
+      #       ~/.pnpm-store
+      #       artifacts
+      #       **/node_modules
+      #     key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-pnpm-
 
       - name: "Install pnpm"
         run: "npm install -g pnpm"
