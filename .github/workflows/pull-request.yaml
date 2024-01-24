@@ -15,8 +15,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "18.19.0"
+      - name: "Install pnpm"
+        run: "npm install -g pnpm"
       - name: "setup packages"
-        run: "npm install"
+        run: "pnpm install"
       - name: "Run tests"
-        run: "npm run test"
+        run: "pnpm test"
 
